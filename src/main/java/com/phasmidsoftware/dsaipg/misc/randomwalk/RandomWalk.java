@@ -13,15 +13,16 @@ import java.util.Random;
  * experiments can be performed to compute average distances.
  */
 public class RandomWalk {
-
     /**
      * Method to compute the distance from the origin (the lamp-post where the drunkard starts) to his current position.
      *
      * @return the (Euclidean) distance from the origin to the current position.
      */
     public double distance() {
-        // TO BE IMPLEMENTED 
-         return 0.0;
+        // TO BE IMPLEMENTED
+        double a = (double) x * x;
+        double b = (double) y * y;
+        return Math.sqrt(a + b);
         // END SOLUTION
     }
 
@@ -33,7 +34,8 @@ public class RandomWalk {
      */
     private void move(int dx, int dy) {
         // TO BE IMPLEMENTED  do move
-         throw new RuntimeException("Not implemented");
+        x += dx;
+        y += dy;
         // END SOLUTION
     }
 
@@ -44,7 +46,9 @@ public class RandomWalk {
      */
     private void randomWalk(int m) {
         // TO BE IMPLEMENTED 
-throw new RuntimeException("implementation missing");
+        for (int i = 0; i < m; i++) {
+            randomMove();
+        }
     }
 
     /**
@@ -89,13 +93,36 @@ throw new RuntimeException("implementation missing");
      *             and args[1] optionally specifies the number of experiments (default is 30).
      *             If args is empty, the method throws a RuntimeException indicating invalid syntax.
      */
+//    public static void main(String[] args) {
+//        if (args.length == 0)
+//            throw new RuntimeException("Syntax: RandomWalk steps [experiments]");
+//        int m = Integer.parseInt(args[0]);
+//        int n = 30;
+//        if (args.length > 1) n = Integer.parseInt(args[1]);
+//        double meanDistance = randomWalkMulti(m, n);
+//        System.out.println(m + " steps: " + meanDistance + " over " + n + " experiments");
     public static void main(String[] args) {
-        if (args.length == 0)
-            throw new RuntimeException("Syntax: RandomWalk steps [experiments]");
-        int m = Integer.parseInt(args[0]);
-        int n = 30;
-        if (args.length > 1) n = Integer.parseInt(args[1]);
-        double meanDistance = randomWalkMulti(m, n);
-        System.out.println(m + " steps: " + meanDistance + " over " + n + " experiments");
+        int[] stepValues = {10, 20, 50, 100, 200, 500};
+        int n = 1000000;
+        if (args.length > 0) {
+            stepValues = new int[]{Integer.parseInt(args[0])};
+        }
+        if (args.length > 1) {
+            n = Integer.parseInt(args[1]);
+        }
+
+        System.out.println("Running Random Walk Experiments...");
+        System.out.println("---------------------------------------------------");
+        System.out.printf("%-10s %-20s %-20s%n", "Steps (m)", "Mean Distance (d)", "d / sqrt(m)");
+
+        for (int m : stepValues) {
+            double meanDistance = randomWalkMulti(m, n);
+            double sqrtM = Math.sqrt(m);
+            double ratio = meanDistance / sqrtM; // 计算 d / sqrt(m)
+
+            System.out.printf("%-10d %-20.6f %-20.6f%n", m, meanDistance, ratio);
+        }
+
+        System.out.println("\nExperiment Complete.");
     }
 }
