@@ -51,11 +51,11 @@ public class ThreeSumBenchmark {
      * The method performs the following tasks:
      * 1. Logs the problem size `n` being tested.
      * 2. Benchmarks the "ThreeSumQuadratic" implementation using its corresponding
-     *    algorithm and time logger.
+     * algorithm and time logger.
      * 3. Benchmarks the "ThreeSumQuadrithmic" implementation with its respective
-     *    algorithm and time logger.
+     * algorithm and time logger.
      * 4. Benchmarks the "ThreeSumCubic" implementation, but skips execution if the
-     *    problem size exceeds a predefined limit (e.g., for scalability reasons).
+     * problem size exceeds a predefined limit (e.g., for scalability reasons).
      * <p>
      * Each benchmark internally utilizes a supplier to generate input arrays, and
      * applies a predefined number of runs to obtain averaged runtime measures.
@@ -92,18 +92,30 @@ public class ThreeSumBenchmark {
      * using a provided function, input size, and time loggers for result recording.
      * CONSIDER redefining function as an instance of ThreeSum.
      *
-     * @param description  a textual description of the Three-Sum algorithm being benchmarked.
-     *                     Used for identification and logging purposes.
-     * @param function     the specific implementation of the Three-Sum algorithm to test.
-     *                     Encapsulated as a Consumer accepting an array of integers as input.
-     * @param n            the size of the input array to generate and test the algorithm with.
-     * @param timeLoggers  an array of TimeLogger instances responsible for logging the performance
-     *                     results of the benchmark.
+     * @param description a textual description of the Three-Sum algorithm being benchmarked.
+     *                    Used for identification and logging purposes.
+     * @param function    the specific implementation of the Three-Sum algorithm to test.
+     *                    Encapsulated as a Consumer accepting an array of integers as input.
+     * @param n           the size of the input array to generate and test the algorithm with.
+     * @param timeLoggers an array of TimeLogger instances responsible for logging the performance
+     *                    results of the benchmark.
      */
     private void benchmarkThreeSum(final String description, final Consumer<int[]> function, int n, final TimeLogger[] timeLoggers) {
         if (description.equals("ThreeSumCubic") && n > 4000) return;
-        // TO BE IMPLEMENTED 
-throw new RuntimeException("implementation missing");
+        // TO BE IMPLEMENTED
+        System.out.println("Benchmarking: " + description);
+
+        int[] testData = supplier.get();
+
+        long startTime = System.nanoTime();
+        function.accept(testData);
+        long endTime = System.nanoTime();
+
+        double timeMillis = (endTime - startTime) / 1e6;
+
+        for (TimeLogger timeLogger : timeLoggers) {
+            timeLogger.log(description, timeMillis, n);
+        }
     }
 
     /**
@@ -125,7 +137,7 @@ throw new RuntimeException("implementation missing");
      * for the expected theoretical complexity of the algorithm (n^2 log n).
      * - The first TimeLogger records raw execution times for benchmarking purposes.
      * - The second TimeLogger calculates normalized times, using the formula n^2 * log(n)
-     *   (where log is computed to the base 2 via Utilities.lg).
+     * (where log is computed to the base 2 via Utilities.lg).
      */
     private final static TimeLogger[] timeLoggersQuadrithmic = {
             new TimeLogger("Raw time per run (mSec): ", null),
