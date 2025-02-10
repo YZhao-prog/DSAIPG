@@ -11,6 +11,7 @@ import com.phasmidsoftware.dsaipg.util.Config_Benchmark;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Random;
 
 import static com.phasmidsoftware.dsaipg.sort.InstrumentedComparatorHelper.getRunsConfig;
 
@@ -64,9 +65,15 @@ public class InsertionSortComparator<X> extends SortWithHelper<X> {
      */
     public void sort(X[] xs, int from, int to) {
         final Helper<X> helper = getHelper();
+        // TO BE IMPLEMENTED
+        for (int i = from + 1; i < to; i++) {
+            int j = i;
+            while (j > from && helper.getComparator().compare(xs[j], xs[j - 1]) < 0) {
+                helper.swap(xs, j - 1, j);
+                --j;
+            }
+        }
 
-        // TO BE IMPLEMENTED 
-throw new RuntimeException("implementation missing");
     }
 
     public static final String DESCRIPTION = "Insertion sort";
@@ -111,6 +118,70 @@ throw new RuntimeException("implementation missing");
             Helper<T> helper = sorter.getHelper();
             sorter.sort(ts, true);
             return helper.getFixes();
+        }
+    }
+
+    // Implement a main program (or you could do it via your own unit tests) to actually run the following benchmarks:
+    // measure the running times of this sort, using four different initial array ordering situations: random, ordered, partially-ordered and reverse-ordered.
+    // I suggest that your arrays to be sorted are of type Integer. Use the doubling method for choosing n and test for at least five values of n.
+    public static void main(String[] args) {
+        final int initialSize = 1000; // Starting array size
+        final int maxDoublings = 5;   // Number of times to double the array size
+        final Random random = new Random();
+
+        // Benchmark different array types
+        String[] orderTypes = {"Random", "Ordered", "Partially-Ordered", "Reverse-Ordered"};
+
+        for (String orderType : orderTypes) {
+            System.out.println("\nBenchmarking Insertion Sort - " + orderType + " Arrays");
+
+            for (int i = 0; i < maxDoublings; i++) {
+                int size = initialSize * (1 << i);
+                Integer[] array = new Integer[size];
+
+                // Generate arrays based on the type
+                switch (orderType) {
+                    case "Random":
+                        for (int j = 0; j < size; j++) array[j] = random.nextInt(size);
+                        break;
+
+                    case "Ordered":
+                        for (int j = 0; j < size; j++) array[j] = j;
+                        break;
+
+                    case "Partially-Ordered":
+                        for (int j = 0; j < size; j++) array[j] = j;
+                        for (int j = 0; j < size / 10; j++) {
+                            int idx1 = random.nextInt(size);
+                            int idx2 = random.nextInt(size);
+                            int temp = array[idx1];
+                            array[idx1] = array[idx2];
+                            array[idx2] = temp;
+                        }
+                        break;
+
+                    case "Reverse-Ordered":
+                        for (int j = 0; j < size; j++) array[j] = size - j;
+                        break;
+                }
+
+                // Benchmarking
+                Config config = Config_Benchmark.setupConfigFixes();
+                InsertionSortComparator<Integer> sorter = new InsertionSortComparator<>(
+                        InsertionSortComparator.DESCRIPTION,
+                        Integer::compareTo,
+                        size,
+                        1,
+                        config
+                );
+
+                long startTime = System.nanoTime();
+                sorter.mutatingSort(array);
+                long endTime = System.nanoTime();
+
+                double elapsedMillis = (endTime - startTime) / 1_000_000.0;
+                System.out.printf("Array Size: %d, Time Taken: %.3f ms%n", size, elapsedMillis);
+            }
         }
     }
 
