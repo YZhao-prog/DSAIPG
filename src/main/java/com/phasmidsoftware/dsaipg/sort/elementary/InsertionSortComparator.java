@@ -8,6 +8,7 @@ import com.phasmidsoftware.dsaipg.sort.Sort;
 import com.phasmidsoftware.dsaipg.sort.SortWithHelper;
 import com.phasmidsoftware.dsaipg.util.Config;
 import com.phasmidsoftware.dsaipg.util.Config_Benchmark;
+import com.phasmidsoftware.dsaipg.util.Timer;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -73,7 +74,6 @@ public class InsertionSortComparator<X> extends SortWithHelper<X> {
                 --j;
             }
         }
-
     }
 
     public static final String DESCRIPTION = "Insertion sort";
@@ -125,64 +125,70 @@ public class InsertionSortComparator<X> extends SortWithHelper<X> {
     // measure the running times of this sort, using four different initial array ordering situations: random, ordered, partially-ordered and reverse-ordered.
     // I suggest that your arrays to be sorted are of type Integer. Use the doubling method for choosing n and test for at least five values of n.
     public static void main(String[] args) {
-        final int initialSize = 1000; // Starting array size
-        final int maxDoublings = 5;   // Number of times to double the array size
+        final int initialSize = 1000;    // Starting array size
+        final int maxDoublings = 5;      // Number of times to double the array size
         final Random random = new Random();
+        final int runs = 10;             // Number of repetitions per array size
 
-        // Benchmark different array types
+        // The four different ordering types.
         String[] orderTypes = {"Random", "Ordered", "Partially-Ordered", "Reverse-Ordered"};
 
+        // Process each ordering type separately.
         for (String orderType : orderTypes) {
             System.out.println("\nBenchmarking Insertion Sort - " + orderType + " Arrays");
-
+            // For each array size, run the sort several times and compute the average time.
             for (int i = 0; i < maxDoublings; i++) {
                 int size = initialSize * (1 << i);
-                Integer[] array = new Integer[size];
+                Timer timer = new Timer();
+                double avgTime = timer.repeat(runs, () -> {
+                    Integer[] array = new Integer[size];
+                    switch (orderType) {
+                        case "Random":
+                            for (int j = 0; j < size; j++) {
+                                array[j] = random.nextInt(size);
+                            }
+                            break;
 
-                // Generate arrays based on the type
-                switch (orderType) {
-                    case "Random":
-                        for (int j = 0; j < size; j++) array[j] = random.nextInt(size);
-                        break;
+                        case "Ordered":
+                            for (int j = 0; j < size; j++) {
+                                array[j] = j;
+                            }
+                            break;
 
-                    case "Ordered":
-                        for (int j = 0; j < size; j++) array[j] = j;
-                        break;
+                        case "Partially-Ordered":
+                            for (int j = 0; j < size; j++) {
+                                array[j] = j;
+                            }
+                            for (int j = 0; j < size / 10; j++) {
+                                int idx1 = random.nextInt(size);
+                                int idx2 = random.nextInt(size);
+                                int temp = array[idx1];
+                                array[idx1] = array[idx2];
+                                array[idx2] = temp;
+                            }
+                            break;
 
-                    case "Partially-Ordered":
-                        for (int j = 0; j < size; j++) array[j] = j;
-                        for (int j = 0; j < size / 10; j++) {
-                            int idx1 = random.nextInt(size);
-                            int idx2 = random.nextInt(size);
-                            int temp = array[idx1];
-                            array[idx1] = array[idx2];
-                            array[idx2] = temp;
-                        }
-                        break;
+                        case "Reverse-Ordered":
+                            for (int j = 0; j < size; j++) {
+                                array[j] = size - j;
+                            }
+                            break;
+                    }
 
-                    case "Reverse-Ordered":
-                        for (int j = 0; j < size; j++) array[j] = size - j;
-                        break;
-                }
-
-                // Benchmarking
-                Config config = Config_Benchmark.setupConfigFixes();
-                InsertionSortComparator<Integer> sorter = new InsertionSortComparator<>(
-                        InsertionSortComparator.DESCRIPTION,
-                        Integer::compareTo,
-                        size,
-                        1,
-                        config
-                );
-
-                long startTime = System.nanoTime();
-                sorter.mutatingSort(array);
-                long endTime = System.nanoTime();
-
-                double elapsedMillis = (endTime - startTime) / 1_000_000.0;
-                System.out.printf("Array Size: %d, Time Taken: %.3f ms%n", size, elapsedMillis);
+                    // Create the sorter and perform the sort.
+                    Config config = Config_Benchmark.setupConfigFixes();
+                    InsertionSortComparator<Integer> sorter = new InsertionSortComparator<>(
+                            InsertionSortComparator.DESCRIPTION,
+                            Integer::compareTo,
+                            size,
+                            1,
+                            config
+                    );
+                    sorter.mutatingSort(array);
+                    return null;
+                });
+                System.out.printf("Array Size: %d, Average Time Taken: %.3f ms%n", size, avgTime);
             }
-        }
-    }
 
-}
+        }
+    }}
