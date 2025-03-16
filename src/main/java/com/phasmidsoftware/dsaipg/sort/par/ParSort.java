@@ -39,16 +39,34 @@ final class ParSort {
      * @param to    the ending index (exclusive) of the portion of the array to be sorted
      */
     public static void sort(int[] array, int from, int to) {
+//        if (to - from >= cutoff) {
+//            CompletableFuture<int[]> completableFuture1 = null;
+//            CompletableFuture<int[]> completableFuture2 = null;
+//            // TO BE IMPLEMENTED
+//            // END SOLUTION
+//            CompletableFuture<int[]> completableFuture = completableFuture1.thenCombine(completableFuture2, ParSort::doMerge);
+//            completableFuture.whenComplete((result, throwable) -> System.arraycopy(result, 0, array, from, result.length));
+//            completableFuture.join();
+//        } else
+//            Arrays.sort(array, from, to);
+
         if (to - from >= cutoff) {
-            CompletableFuture<int[]> completableFuture1 = null;
-            CompletableFuture<int[]> completableFuture2 = null;
-            // TO BE IMPLEMENTED 
-            // END SOLUTION
-            CompletableFuture<int[]> completableFuture = completableFuture1.thenCombine(completableFuture2, ParSort::doMerge);
-            completableFuture.whenComplete((result, throwable) -> System.arraycopy(result, 0, array, from, result.length));
-            completableFuture.join();
-        } else
+            int mid = (from + to) / 2;
+            CompletableFuture<int[]> leftFuture = asyncSort(array, from, mid);
+            CompletableFuture<int[]> rightFuture = asyncSort(array, mid, to);
+            CompletableFuture<int[]> mergedFuture =
+                    leftFuture.thenCombine(rightFuture, ParSort::doMerge);
+            mergedFuture.whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    throwable.printStackTrace();
+                } else {
+                    System.arraycopy(result, 0, array, from, result.length);
+                }
+            });
+            mergedFuture.join();
+        } else {
             Arrays.sort(array, from, to);
+        }
     }
 
     /**
@@ -65,8 +83,20 @@ final class ParSort {
         int[] result = new int[to - from];
         // TO BE IMPLEMENTED 
          // NOTE you need to do something here so that result is the sorted version of array.
+        int n = to - from;
+        if (n < cutoff) {
+            result = Arrays.copyOfRange(array, from, to);
+            Arrays.sort(result);
+            return result;
+        } else {
+            int mid = from + n / 2;
+            CompletableFuture<int[]> leftFuture = asyncSort(array, from, mid);
+            CompletableFuture<int[]> rightFuture = asyncSort(array, mid, to);
+            int[] left = leftFuture.join();
+            int[] right = rightFuture.join();
+            return doMerge(left, right);
+        }
         // END SOLUTION
-        return result;
     }
 
     /**
