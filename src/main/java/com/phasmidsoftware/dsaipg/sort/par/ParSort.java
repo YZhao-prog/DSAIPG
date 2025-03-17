@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
  * where large arrays are divided into smaller portions and sorted concurrently.
  * Designed to optimize performance for sorting large integer arrays.
  * This code has been fleshed out by...
+ *
  * @author Ziyao Qiao. Thanks very much.
  */
 final class ParSort {
@@ -39,17 +40,6 @@ final class ParSort {
      * @param to    the ending index (exclusive) of the portion of the array to be sorted
      */
     public static void sort(int[] array, int from, int to) {
-//        if (to - from >= cutoff) {
-//            CompletableFuture<int[]> completableFuture1 = null;
-//            CompletableFuture<int[]> completableFuture2 = null;
-//            // TO BE IMPLEMENTED
-//            // END SOLUTION
-//            CompletableFuture<int[]> completableFuture = completableFuture1.thenCombine(completableFuture2, ParSort::doMerge);
-//            completableFuture.whenComplete((result, throwable) -> System.arraycopy(result, 0, array, from, result.length));
-//            completableFuture.join();
-//        } else
-//            Arrays.sort(array, from, to);
-
         if (to - from >= cutoff) {
             int mid = (from + to) / 2;
             CompletableFuture<int[]> leftFuture = asyncSort(array, from, mid);
@@ -82,7 +72,7 @@ final class ParSort {
     static int[] sortRecursive(int[] array, int from, int to) {
         int[] result = new int[to - from];
         // TO BE IMPLEMENTED 
-         // NOTE you need to do something here so that result is the sorted version of array.
+        // NOTE you need to do something here so that result is the sorted version of array.
         int n = to - from;
         if (n < cutoff) {
             result = Arrays.copyOfRange(array, from, to);
