@@ -240,6 +240,22 @@ public class TicTacToe implements Game<TicTacToe> {
             this(startingPosition());
         }
 
+        /**
+         * Choose a random valid move for the current player.
+         *
+         * @param player the current player.
+         * @return a randomly selected valid move.
+         */
+        public Move<TicTacToe> chooseMove(int player) {
+            Collection<Move<TicTacToe>> validMoves = moves(player);
+            List<Move<TicTacToe>> moveList = new ArrayList<>(validMoves);
+            if (moveList.isEmpty()) {
+                throw new IllegalStateException("No valid moves available!");
+            }
+            // Randomly select a move from valid moves
+            return moveList.get(random().nextInt(moveList.size()));
+        }
+
         private final Position position;
     }
 }
