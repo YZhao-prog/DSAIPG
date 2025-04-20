@@ -45,6 +45,10 @@ public class TicTacToeNode implements Node<TicTacToe> {
         return children;
     }
 
+    public void update() {
+        MCTS.explore(this);
+    }
+
     /**
      * Method to add a child to this Node.
      *
@@ -101,5 +105,14 @@ public class TicTacToeNode implements Node<TicTacToe> {
     private final ArrayList<Node<TicTacToe>> children;
 
     private int wins;
+
+    public void setWins(int wins) {
+        this.wins = wins;
+    }
+
+    public void setPlayouts(int playouts) {
+        this.playouts = playouts;
+    }
+
     private int playouts;
 }

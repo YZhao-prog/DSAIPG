@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -111,7 +112,7 @@ public class KnapsackTest {
         Knapsack knapsack = new Knapsack(list);
         Knapsack.Solution solution = knapsack.value(850);
         assertEquals(7534, solution.value);
-        assertEquals(Knapsack.Solution.of(Arrays.stream(itemsPacked).toList()).items, solution.items);
+        assertEquals(Knapsack.Solution.of(Arrays.stream(itemsPacked).collect(Collectors.toList())).items, solution.items);
         assertEquals(31373, knapsack.subProblems());
     }
 

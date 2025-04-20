@@ -6,6 +6,7 @@ package com.phasmidsoftware.dsaipg.projects.mcts.tictactoe;
 
 import com.phasmidsoftware.dsaipg.projects.mcts.core.Game;
 import com.phasmidsoftware.dsaipg.projects.mcts.core.Move;
+import com.phasmidsoftware.dsaipg.projects.mcts.core.Node;
 import com.phasmidsoftware.dsaipg.projects.mcts.core.State;
 
 import java.util.*;
@@ -51,6 +52,20 @@ public class TicTacToe implements Game<TicTacToe> {
             state = state.next(state.chooseMove(player));
             player = 1 - player;
         }
+        return state;
+    }
+
+    State<TicTacToe> runGameWithMCTS() {
+        State<TicTacToe> state = start();
+
+        while (!state.isTerminal()) {
+            TicTacToeNode root = new TicTacToeNode(state);
+            root.explore();
+
+            Node<TicTacToe> best = MCTS.getBestByWinRate(root);
+            state = best.state();
+        }
+
         return state;
     }
 
@@ -238,22 +253,6 @@ public class TicTacToe implements Game<TicTacToe> {
 
         public TicTacToeState() {
             this(startingPosition());
-        }
-
-        /**
-         * Choose a random valid move for the current player.
-         *
-         * @param player the current player.
-         * @return a randomly selected valid move.
-         */
-        public Move<TicTacToe> chooseMove(int player) {
-            Collection<Move<TicTacToe>> validMoves = moves(player);
-            List<Move<TicTacToe>> moveList = new ArrayList<>(validMoves);
-            if (moveList.isEmpty()) {
-                throw new IllegalStateException("No valid moves available!");
-            }
-            // Randomly select a move from valid moves
-            return moveList.get(random().nextInt(moveList.size()));
         }
 
         private final Position position;

@@ -22,4 +22,13 @@ public class TicTacToeTest {
         if (winner.isPresent()) assertEquals(Integer.valueOf(TicTacToe.X), winner.get());
         else fail("no winner");
     }
+
+    @Test
+    public void runGameWithMCTS() {
+        TicTacToe target = new TicTacToe(0);
+        State<TicTacToe> state = target.runGameWithMCTS();
+        Optional<Integer> winner = state.winner();
+        if (winner.isPresent()) assertEquals(Integer.valueOf(TicTacToe.X), winner.get());
+        else fail("no winner");
+    }
 }
