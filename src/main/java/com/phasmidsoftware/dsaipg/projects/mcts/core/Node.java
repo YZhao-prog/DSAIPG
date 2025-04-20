@@ -4,6 +4,8 @@
 
 package com.phasmidsoftware.dsaipg.projects.mcts.core;
 
+import com.phasmidsoftware.dsaipg.projects.mcts.tictactoe.MCTS;
+
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -47,9 +49,16 @@ public interface Node<G extends Game> {
         if (isLeaf()) return;
         if (children().isEmpty()) {
             addChildren(state());
+            // We must simulate all children and calculate their scores before performing backpropagation to the root.
+            update();
             backPropagate();
         } else throw new RuntimeException("exploration done already for " + this);
     }
+
+    /**
+     * update each children possiblity
+     */
+    void update();
 
     /**
      * This method sets the number of wins and playouts according to the children states.

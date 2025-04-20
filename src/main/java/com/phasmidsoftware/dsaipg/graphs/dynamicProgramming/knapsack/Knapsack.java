@@ -10,6 +10,7 @@ import com.phasmidsoftware.dsaipg.adt.bqs.Dictionary_Hash;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -75,7 +76,7 @@ public class Knapsack {
 
         public Solution increment(Item item) {
             if (value == -1) return this;
-            List<Item> list = Stream.concat(items.stream(), Stream.of(item)).toList();
+            List<Item> list = Stream.concat(items.stream(), Stream.of(item)).collect(Collectors.toList());
             return new Solution(value + item.value, list);
         }
 

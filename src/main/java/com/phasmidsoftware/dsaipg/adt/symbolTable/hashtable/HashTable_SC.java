@@ -45,7 +45,7 @@ public class HashTable_SC<Key, Value> implements ST<Key, Value> {
     public Value put(Key key, Value value) {
         int index = getIndex(key);
         @SuppressWarnings("unchecked") Node bucket = (Node) buckets[index];
-        List<Node> matches = nodesAsStream(bucket).takeWhile(Objects::nonNull).filter(node -> node.key.equals(key)).toList();
+        List<Node> matches = nodesAsStream(bucket).takeWhile(Objects::nonNull).filter(node -> node.key.equals(key)).collect(Collectors.toList());
         if (matches.size() == 1)
             matches.get(0).value = value;
         else if (matches.isEmpty())
@@ -77,7 +77,7 @@ public class HashTable_SC<Key, Value> implements ST<Key, Value> {
         Set<Key> result = new TreeSet<>();
         for (Object bucket : buckets)
             //noinspection unchecked
-            result.addAll(nodesAsStream((Node) bucket).map(node -> node.key).toList());
+            result.addAll(nodesAsStream((Node) bucket).map(node -> node.key).collect(Collectors.toList()));
         return result;
     }
 
