@@ -1,9 +1,14 @@
 package com.phasmidsoftware.dsaipg.projects.mcts.connectfour;
 
 import com.phasmidsoftware.dsaipg.projects.mcts.core.*;
+import org.junit.Test;
 
 public class ConnectFourSimulationStats {
-    public static void main(String[] args) {
+    @Test
+    public void groupTest500Times() {
+        groupTest();
+    }
+    public void groupTest() {
         int win0 = 0, win1 = 0, draw = 0;
         int simulations = 500; // Run 500 games
 

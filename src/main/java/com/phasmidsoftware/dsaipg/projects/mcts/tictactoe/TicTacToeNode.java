@@ -13,6 +13,15 @@ import java.util.Optional;
 
 public class TicTacToeNode implements Node<TicTacToe> {
 
+    private TicTacToeNode parent = null;
+
+    public TicTacToeNode getParent() {
+        return parent;
+    }
+
+    public void setParent(TicTacToeNode parent) {
+        this.parent = parent;
+    }
     /**
      * @return true if this node is a leaf node (in which case no further exploration is possible).
      */
@@ -46,7 +55,7 @@ public class TicTacToeNode implements Node<TicTacToe> {
     }
 
     public void update() {
-        MCTS.explore(this);
+        MCTS.run(this, TicTacToeNode.ROUND);
     }
 
     /**
@@ -54,9 +63,13 @@ public class TicTacToeNode implements Node<TicTacToe> {
      *
      * @param state the State for the new chile.
      */
-    public void addChild(State<TicTacToe> state) {
-        children.add(new TicTacToeNode(state));
+    public Node<TicTacToe> addChild(State<TicTacToe> state) {
+        TicTacToeNode child = new TicTacToeNode(state);
+        child.setParent(this);
+        children.add(child);
+        return child;
     }
+
 
     /**
      * This method sets the number of wins and playouts according to the children states.
@@ -103,6 +116,7 @@ public class TicTacToeNode implements Node<TicTacToe> {
 
     private final State<TicTacToe> state;
     private final ArrayList<Node<TicTacToe>> children;
+    public static final Integer ROUND = 100;
 
     private int wins;
 
@@ -115,4 +129,12 @@ public class TicTacToeNode implements Node<TicTacToe> {
     }
 
     private int playouts;
+
+    public void incrementPlayouts() {
+        this.playouts++;
+    }
+
+    public void addWins(int result) {
+        this.wins += result;
+    }
 }

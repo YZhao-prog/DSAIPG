@@ -1,81 +1,84 @@
-/*
- * Copyright (c) 2024. Robin Hillyard
- */
-
 package com.phasmidsoftware.dsaipg.projects.mcts.tictactoe;
 
 import com.phasmidsoftware.dsaipg.projects.mcts.core.Move;
 import com.phasmidsoftware.dsaipg.projects.mcts.core.Node;
 import com.phasmidsoftware.dsaipg.projects.mcts.core.State;
 
-import java.util.Comparator;
-import java.util.Optional;
+import java.util.*;
 
 public class MCTS {
 
-    public static void main(String[] args) {
-        TicTacToe game = new TicTacToe(42L);
-        TicTacToeNode root = new TicTacToeNode(game.start());
+    private static final int SIMULATIONS = 1000;
+    private static final double EXPLORATION_CONSTANT = Math.sqrt(2);
 
-        int moveNumber = 0;
-        while (!root.isLeaf()) {
-            System.out.printf("Move #%d - Player: %s%n", moveNumber + 1,
-                    root.state().player() == TicTacToe.X ? "X" : "O");
-
-            // Step 1: MCTS Search on current root
-            root.explore(); //  addChildren + MCTS.explore + backPropagate
-
-            // Step 2: Choose best move (most simulations)
-            Node<TicTacToe> best = MCTS.getBestByWinRate(root);
-
-            // Step 3: Display move
-            System.out.println("Best move chosen:");
-            System.out.println(best.state());
-            System.out.printf("→ Playouts: %d, Wins: %d, Win Rate: %.2f%n%n",
-                    best.playouts(), best.wins(), (double) best.wins() / best.playouts());
-
-            // Step 4: Advance to next state
-            root = new TicTacToeNode(best.state());
-            moveNumber++;
+    /**
+     * use MCTS
+     */
+    public static void run(Node<TicTacToe> root, int iterations) {
+        for (int i = 0; i < iterations; i++) {
+            Node<TicTacToe> selected = select(root);
+            Node<TicTacToe> expanded = expand(selected);
+            int result = simulate(expanded.state());
+            backPropagate(expanded, result);
         }
-
-        // Step 5: Game over
-        System.out.println("=== Final Game State ===");
-        System.out.println(root.state());
-        System.out.println("Game Over!");
-        root.state().winner().ifPresentOrElse(
-                winner -> System.out.println("Winner: " + (winner == TicTacToe.X ? "X" : "O")),
-                () -> System.out.println("Result: Draw")
-        );
     }
 
     /**
-     * Explore a node:
-     * - Add all children via Node.addChildren (already done in Node.explore)
-     * - For each child:
-     *     - Simulate a complete game from that child's state
-     *     - Set child wins/playouts based on the result
-     * Parent's backPropagate is called in Node.explore()
+     *
      */
-    public static void explore(Node<TicTacToe> node) {
-        for (Node<TicTacToe> child : node.children()) {
-            int result = simulate(child.state());
-            if (child instanceof TicTacToeNode tNode) {
-                tNode.setPlayouts(1);
-                tNode.setWins(result);
+    private static Node<TicTacToe> select(Node<TicTacToe> node) {
+        while (!node.isLeaf() && !node.children().isEmpty()) {
+            Node<TicTacToe> finalNode = node;
+            node = node.children().stream()
+                    .max(Comparator.comparingDouble(child -> ucbScore(finalNode, child)))
+                    .orElseThrow();
+        }
+        return node;
+    }
+
+    /**
+     * UCB1 rate
+     */
+    private static double ucbScore(Node<TicTacToe> parent, Node<TicTacToe> child) {
+        if (child.playouts() == 0) return Double.POSITIVE_INFINITY;
+        double winRate = (double) child.wins() / child.playouts();
+        double explore = Math.sqrt(Math.log(parent.playouts() + 1.0) / child.playouts());
+        return winRate + EXPLORATION_CONSTANT * explore;
+    }
+
+    /**
+     * Expansion：expand a node that hasn't been visited
+     */
+    private static Node<TicTacToe> expand(Node<TicTacToe> node) {
+//        node.explore();
+        if (node.isLeaf()) return node;
+
+        if (node.children().isEmpty()) {
+            // Only expand one child node
+            State<TicTacToe> currentState = node.state();
+            Iterator<Move<TicTacToe>> iterator = currentState.moveIterator(currentState.player());
+            if (iterator.hasNext()) {
+                Move<TicTacToe> move = iterator.next();
+                State<TicTacToe> childState = currentState.next(move);
+                return node.addChild(childState);
+//                return new TicTacToeNode(childState);
             }
         }
+
+        return node.children().stream()
+                .filter(child -> child.playouts() == 0)
+                .findAny()
+                .orElseGet(() -> node.children().iterator().next());
     }
 
     /**
-     * Simulate a random playout until terminal state.
-     * @param state the starting state
-     * @return 2 if win, 1 if draw, 0 if loss (from the perspective of starting player)
+     * Simulation：run to final
      */
     private static int simulate(State<TicTacToe> state) {
         int rootPlayer = state.player();
         while (!state.isTerminal()) {
-            Move<TicTacToe> move = state.chooseMove(state.player());
+            Iterator<Move<TicTacToe>> moves = state.moveIterator(state.player());
+            Move<TicTacToe> move = moves.next();
             state = state.next(move);
         }
         Optional<Integer> winner = state.winner();
@@ -83,9 +86,18 @@ public class MCTS {
     }
 
     /**
-     * Select the best child node based on playouts.
-     * @param node parent node
-     * @return the most visited child
+     * Backpropagation：callback score to parent recursively
+     */
+    private static void backPropagate(Node<TicTacToe> node, int result) {
+        while (node instanceof TicTacToeNode tNode) {
+            tNode.incrementPlayouts();
+            tNode.addWins(result);
+            node = ((TicTacToeNode) node).getParent();
+        }
+    }
+
+    /**
+     * find best node
      */
     public static Node<TicTacToe> getBest(Node<TicTacToe> node) {
         return node.children().stream()
@@ -94,7 +106,7 @@ public class MCTS {
     }
 
     /**
-     * Optional: Get best child by win rate.
+     * find best node by winrate
      */
     public static Node<TicTacToe> getBestByWinRate(Node<TicTacToe> node) {
         return node.children().stream()

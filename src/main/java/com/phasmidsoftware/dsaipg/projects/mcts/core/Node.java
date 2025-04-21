@@ -5,6 +5,7 @@
 package com.phasmidsoftware.dsaipg.projects.mcts.core;
 
 import com.phasmidsoftware.dsaipg.projects.mcts.tictactoe.MCTS;
+import com.phasmidsoftware.dsaipg.projects.mcts.tictactoe.TicTacToe;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -49,8 +50,7 @@ public interface Node<G extends Game> {
         if (isLeaf()) return;
         if (children().isEmpty()) {
             addChildren(state());
-            // We must simulate all children and calculate their scores before performing backpropagation to the root.
-            update();
+//            update();
             backPropagate();
         } else throw new RuntimeException("exploration done already for " + this);
     }
@@ -70,7 +70,7 @@ public interface Node<G extends Game> {
      *
      * @param state the State for the new chile.
      */
-    void addChild(State<G> state);
+    Node<TicTacToe> addChild(State<G> state);
 
     /**
      * @return the score for this Node and its descendents a win is worth 2 points, a draw is worth 1 point.

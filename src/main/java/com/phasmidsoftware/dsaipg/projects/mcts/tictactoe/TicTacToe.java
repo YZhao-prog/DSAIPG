@@ -60,7 +60,7 @@ public class TicTacToe implements Game<TicTacToe> {
 
         while (!state.isTerminal()) {
             TicTacToeNode root = new TicTacToeNode(state);
-            root.explore();
+            MCTS.run(root, 1000);
 
             Node<TicTacToe> best = MCTS.getBestByWinRate(root);
             state = best.state();
